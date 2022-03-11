@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Noodle.App": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
