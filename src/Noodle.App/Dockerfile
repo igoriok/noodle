@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["src/Noodle.App/Noodle.App.csproj", "Noodle.App/"]
 RUN dotnet restore "Noodle.App/Noodle.App.csproj"
-COPY . .
+COPY src .
 WORKDIR "/src/Noodle.App"
 RUN dotnet build "Noodle.App.csproj" -c Release -o /app/build
 
