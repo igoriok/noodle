@@ -1,8 +1,12 @@
-﻿using Noodle.App.Common;
+﻿using System.ComponentModel;
+using Noodle.App.Common;
+using Spectre.Console.Cli;
 
 namespace Noodle.App.Jobs;
 
-public class HttpJobOptions : JobOptions
+public class HttpJobOptions : BaseJobOptions
 {
-    public string Method { get; set; }
+    [CommandOption("-m|--method")]
+    [DefaultValue("GET")]
+    public string Method { get; set; } = "GET";
 }

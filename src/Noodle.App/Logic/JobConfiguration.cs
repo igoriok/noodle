@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Noodle.App.Commands;
 using Noodle.App.Common;
 using Noodle.App.Jobs;
 
@@ -13,7 +14,7 @@ public class JobConfiguration
         _configuration = configuration;
     }
 
-    public IEnumerable<JobOptions> Load()
+    public IEnumerable<BaseJobOptions> Load()
     {
         var section = _configuration.GetSection("Jobs");
 
@@ -25,7 +26,7 @@ public class JobConfiguration
         }
     }
 
-    private JobOptions Deserialize(Uri url, IConfiguration configuration)
+    private BaseJobOptions Deserialize(Uri url, IConfiguration configuration)
     {
         return url.Scheme switch
         {

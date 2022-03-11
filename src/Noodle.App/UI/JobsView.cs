@@ -13,9 +13,9 @@ public class JobsView : JustInTimeRenderable
         _workers = workers;
     }
 
-    public void Refresh()
+    protected override bool HasDirtyChildren()
     {
-        MarkAsDirty();
+        return true;
     }
 
     protected override IRenderable Build()

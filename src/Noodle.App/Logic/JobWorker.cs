@@ -8,11 +8,11 @@ public class JobWorker : IDisposable
 
     public IJob Job { get; }
 
-    public JobOptions Options { get; }
+    public BaseJobOptions Options { get; }
 
     public JobStats Stats { get; }
 
-    public JobWorker(IJob job, JobOptions options)
+    public JobWorker(IJob job, BaseJobOptions options)
     {
         Job = job;
         Options = options;

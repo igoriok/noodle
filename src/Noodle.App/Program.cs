@@ -1,39 +1,29 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Spectre.Console;
-using Spectre.Console.Rendering;
-using Noodle.App;
+using Noodle.App.Commands;
+using Noodle.App.Infrastructure;
+using Noodle.App.Jobs;
 using Noodle.App.Logic;
-using Noodle.App.UI;
+using Spectre.Console;
+using Spectre.Console.Cli;
 
-await new HostBuilder()
-    .ConfigureAppConfiguration(cfg =>
-    {
-        cfg.AddJsonFile("appsettings.json", false, true);
-    })
-    .ConfigureServices(services =>
-    {
-        services.AddSingleton(_ => AnsiConsole.Create(new AnsiConsoleSettings()));
-        services.AddSingleton<JobConfiguration>();
-        services.AddSingleton<JobFactory>();
-        services.AddSingleton<JobStore>();
-        services.AddSingleton<Application>();
-        services.AddHostedService<Service>();
-    })
-    .RunConsoleAsync();
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
 
-public class Service : BackgroundService
+var services = new ServiceCollection()
+    .AddSingleton<IConfiguration>(configuration)
+    .AddSingleton<JobConfiguration>()
+    .AddSingleton<JobFactory>()
+    .AddSingleton<JobStore>();
+
+var app = new CommandApp<DefaultCommand>(new TypeRegistrar(services));
+
+app.Configure(cfg =>
 {
-    private readonly Application _app;
+    cfg.AddCommand<JobCommand<HttpJobOptions>>("http");
 
-    public Service(Application app)
-    {
-        _app = app;
-    }
+    cfg.SetExceptionHandler(e => AnsiConsole.WriteException(e));
+});
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        return _app.RunAsync(stoppingToken);
-    }
-}
+return await app.RunAsync(args);

@@ -1,11 +1,12 @@
-﻿using Noodle.App.Common;
+﻿using Noodle.App.Commands;
+using Noodle.App.Common;
 using Noodle.App.Jobs;
 
 namespace Noodle.App.Logic;
 
 public class JobFactory
 {
-    public IJob Create(JobOptions options)
+    public IJob Create(BaseJobOptions options)
     {
         switch (options)
         {

@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Noodle.App": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "http https://google.com -c 10"
     },
     "Docker": {
       "commandName": "Docker"

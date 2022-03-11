@@ -1,4 +1,5 @@
-﻿using Noodle.App.Common;
+﻿using Noodle.App.Commands;
+using Noodle.App.Common;
 
 namespace Noodle.App.Jobs;
 
@@ -7,7 +8,7 @@ public class HttpJob : IJob
     private readonly HttpJobOptions _options;
     private readonly HttpClient _httpClient;
 
-    public JobOptions Options => _options;
+    public BaseJobOptions Options => _options;
 
     public HttpJob(HttpJobOptions options)
     {
