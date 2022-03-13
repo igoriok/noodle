@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
+using Noodle.App.Common;
 using Spectre.Console.Cli;
 
-namespace Noodle.App.Common;
+namespace Noodle.App.Jobs;
 
-public abstract class BaseJobOptions : CommandSettings
+public abstract class BaseJobOptions : CommandSettings, IJobOptions
 {
     [CommandArgument(0, "<url>")]
     public Uri Url { get; set; }

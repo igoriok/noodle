@@ -1,5 +1,5 @@
 ﻿using Noodle.App.Common;
-using Noodle.App.Logic;
+using Noodle.App.Jobs;
 using Noodle.App.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -10,9 +10,9 @@ public class JobCommand<TOptions> : AsyncCommand<TOptions>
     where TOptions : BaseJobOptions
 {
     private readonly IAnsiConsole _console;
-    private readonly JobFactory _factory;
+    private readonly IJobFactory<TOptions> _factory;
 
-    public JobCommand(IAnsiConsole console, JobFactory factory)
+    public JobCommand(IAnsiConsole console, IJobFactory<TOptions> factory)
     {
         _console = console;
         _factory = factory;
@@ -31,30 +31,28 @@ public class JobCommand<TOptions> : AsyncCommand<TOptions>
 
     private async Task ExecuteAsync(TOptions options, CancellationToken cancellationToken)
     {
-        using (var job = _factory.Create(options))
+        using var job = _factory.CreateJob(options);
+
+        var view = new JobsView(job);
+
+        try
         {
-            var worker = new JobWorker(job, options);
-            var view = new JobsView(worker);
+            var task = job.RunAsync(cancellationToken);
 
-            var task = worker.RunAsync(cancellationToken);
-
-            try
-            {
-                await _console
-                    .Live(view)
-                    .StartAsync(async ctx =>
+            await _console
+                .Live(view)
+                .StartAsync(async ctx =>
+                {
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        while (!cancellationToken.IsCancellationRequested)
-                        {
-                            await Task.Delay(TimeSpan.FromSeconds(0.5), cancellationToken);
+                        await Task.Delay(TimeSpan.FromSeconds(0.5), cancellationToken);
 
-                            ctx.Refresh();
-                        }
-                    });
+                        ctx.Refresh();
+                    }
+                });
 
-                await task;
-            }
-            catch (TaskCanceledException) { }
+            await task;
         }
+        catch (TaskCanceledException) { }
     }
 }

@@ -14,7 +14,7 @@ public class JobConfiguration
         _configuration = configuration;
     }
 
-    public IEnumerable<BaseJobOptions> Load()
+    public IEnumerable<IJobOptions> Load()
     {
         var section = _configuration.GetSection("Jobs");
 

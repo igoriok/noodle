@@ -1,4 +1,4 @@
-﻿using Noodle.App.Logic;
+﻿using Noodle.App.Common;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -6,11 +6,11 @@ namespace Noodle.App.UI;
 
 public class JobsView : JustInTimeRenderable
 {
-    private readonly JobWorker[] _workers;
+    private readonly IJob[] _jobs;
 
-    public JobsView(params JobWorker[] workers)
+    public JobsView(params IJob[] jobs)
     {
-        _workers = workers;
+        _jobs = jobs;
     }
 
     protected override bool HasDirtyChildren()
@@ -26,7 +26,7 @@ public class JobsView : JustInTimeRenderable
             .AddColumn("Successful")
             .AddColumn("Failed");
 
-        foreach (var job in _workers)
+        foreach (var job in _jobs)
         {
             table.AddRow(
                 new Text($"{job.Options.Url}"),
