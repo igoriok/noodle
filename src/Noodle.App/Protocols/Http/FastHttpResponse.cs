@@ -14,43 +14,41 @@ public class FastHttpResponse
 
     public IReadOnlyDictionary<string, string> Headers { get; private set; }
 
-    public static async Task<FastHttpResponse> FromStreamAsync(Stream stream, CancellationToken cancellationToken)
+    public static async Task<FastHttpResponse> FromStreamAsync(PipeReader reader, CancellationToken cancellationToken)
     {
         var response = new FastHttpResponse();
 
-        await response.ReadAsync(stream, cancellationToken);
+        await response.ReadAsync(reader, cancellationToken);
 
         return response;
     }
 
-    private async Task ReadAsync(Stream stream, CancellationToken cancellationToken)
+    private async Task ReadAsync(PipeReader reader, CancellationToken cancellationToken)
     {
-        var reader = PipeReader.Create(stream, new StreamPipeReaderOptions());
-
-        await ReadStatusAsync(reader, cancellationToken);
-        await ReaderHeadersAsync(reader, cancellationToken);
+        if (await ReadStatusAsync(reader, cancellationToken))
+            await ReaderHeadersAsync(reader, cancellationToken);
         //await ReadToEndAsync(reader, cancellationToken);
 
         await reader.CompleteAsync();
     }
 
-    private async Task ReadStatusAsync(PipeReader reader, CancellationToken cancellationToken)
+    private async Task<bool> ReadStatusAsync(PipeReader reader, CancellationToken cancellationToken)
     {
         var status = await ReadLineAsync(reader, cancellationToken);
+        var parts = status?.Split(" ", 3);
 
-        if (!string.IsNullOrEmpty(status))
+        if (parts?.Length == 3 && int.TryParse(parts[1], out var code))
         {
-            var parts = status.Split(" ", 3);
+            StatusCode = code;
+            StatusMessage = parts[2];
 
-            if (parts.Length == 3)
-            {
-                StatusCode = int.Parse(parts[1]);
-                StatusMessage = parts[2];
-            }
+            return true;
         }
+
+        return false;
     }
 
-    private async Task ReaderHeadersAsync(PipeReader reader, CancellationToken cancellationToken)
+    private async Task<bool> ReaderHeadersAsync(PipeReader reader, CancellationToken cancellationToken)
     {
         var headers = new Dictionary<string, string>();
 
@@ -66,6 +64,8 @@ public class FastHttpResponse
         }
 
         Headers = headers;
+
+        return headers.Count > 0;
     }
 
     private static async Task<string> ReadLineAsync(PipeReader reader, CancellationToken cancellationToken)
@@ -74,9 +74,9 @@ public class FastHttpResponse
         {
             var result = await reader.ReadAsync(cancellationToken);
 
-            if (TryReadLine(result.Buffer, out var consumed, out var line))
+            if (TryReadLine(result.Buffer, out var position, out var line))
             {
-                reader.AdvanceTo(result.Buffer.GetPosition(consumed));
+                reader.AdvanceTo(position);
 
                 return line;
             }
@@ -88,7 +88,7 @@ public class FastHttpResponse
         }
     }
 
-    private static bool TryReadLine(ReadOnlySequence<byte> buffer, out long consumed, out string line)
+    private static bool TryReadLine(ReadOnlySequence<byte> buffer, out SequencePosition position, out string line)
     {
         var newLine = new ReadOnlySpan<byte>(NewLine);
         var reader = new SequenceReader<byte>(buffer);
@@ -96,12 +96,12 @@ public class FastHttpResponse
         if (reader.TryReadTo(out ReadOnlySequence<byte> subSequence, newLine))
         {
             line = Encoding.ASCII.GetString(subSequence);
-            consumed = reader.Consumed;
+            position = reader.Position;
             return true;
         }
 
         line = default;
-        consumed = 0;
+        position = default;
         return false;
     }
 

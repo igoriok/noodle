@@ -2,6 +2,7 @@
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
+using Pipelines.Sockets.Unofficial;
 
 namespace Noodle.App.Protocols.Http;
 
@@ -13,7 +14,9 @@ public class FastHttpConnection : IDisposable
     public FastHttpConnection(Uri url)
     {
         _url = url;
-        _endpoint = new DnsEndPoint(_url.Host, _url.Port);
+        _endpoint = _url.HostNameType == UriHostNameType.Dns
+            ? new DnsEndPoint(_url.DnsSafeHost, _url.Port)
+            : new IPEndPoint(IPAddress.Parse(_url.Host), _url.Port);
     }
 
     public async Task<FastHttpResponse> SendAsync(FastHttpRequest request, CancellationToken cancellationToken)
@@ -37,9 +40,11 @@ public class FastHttpConnection : IDisposable
     {
         await using var stream = await GetStream(socket, cancellationToken);
 
-        await request.WriteAsync(stream, cancellationToken);
+        var pipe = StreamConnection.GetDuplex(stream);
 
-        return await FastHttpResponse.FromStreamAsync(stream, cancellationToken);
+        await request.WriteAsync(pipe.Output, cancellationToken);
+
+        return await FastHttpResponse.FromStreamAsync(pipe.Input, cancellationToken);
     }
 
     private async Task<Stream> GetStream(Socket socket, CancellationToken cancellationToken)

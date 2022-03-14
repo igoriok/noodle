@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO.Pipelines;
+using System.Text;
 
 namespace Noodle.App.Protocols.Http;
 
@@ -16,7 +17,7 @@ public class FastHttpRequest
         Method = method;
     }
 
-    public async Task WriteAsync(Stream stream, CancellationToken cancellationToken)
+    public async Task WriteAsync(PipeWriter writer, CancellationToken cancellationToken)
     {
         var request = new StringBuilder()
             .Append($"{Method} {Url.PathAndQuery} HTTP/1.1").Append("\r\n")
@@ -26,7 +27,6 @@ public class FastHttpRequest
             .Append("\r\n")
             .ToString();
 
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(request), cancellationToken);
-        await stream.FlushAsync(cancellationToken);
+        await writer.WriteAsync(Encoding.UTF8.GetBytes(request), cancellationToken);
     }
 }
