@@ -1,4 +1,4 @@
-﻿using Noodle.App.Common;
+﻿using Noodle.App.Logic;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -6,9 +6,9 @@ namespace Noodle.App.UI;
 
 public class JobsView : JustInTimeRenderable
 {
-    private readonly IJob[] _jobs;
+    private readonly JobRunner[] _jobs;
 
-    public JobsView(params IJob[] jobs)
+    public JobsView(params JobRunner[] jobs)
     {
         _jobs = jobs;
     }

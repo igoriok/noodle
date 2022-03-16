@@ -5,25 +5,23 @@ namespace Noodle.App.Logic;
 public class JobStore
 {
     private readonly JobConfiguration _configuration;
-    private readonly IJobFactory<IJobOptions> _factory;
+    private readonly IJobFactory _factory;
 
-    public JobStore(JobConfiguration configuration, IJobFactory<IJobOptions> factory)
+    public JobStore(JobConfiguration configuration, IJobFactory factory)
     {
         _configuration = configuration;
         _factory = factory;
     }
 
-    public IEnumerable<IJob> Load()
+    public IEnumerable<JobRunner> Load()
     {
         foreach (var options in _configuration.Load())
         {
-            var job = _factory.CreateJob(options);
-
-            yield return job;
+            yield return new JobRunner(_factory, options);
         }
     }
 
-    public void Release(IEnumerable<IJob> jobs)
+    public void Release(IEnumerable<JobRunner> jobs)
     {
         foreach (var job in jobs)
         {

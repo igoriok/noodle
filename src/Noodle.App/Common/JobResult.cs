@@ -2,14 +2,10 @@
 
 public class JobResult
 {
-    public TimeSpan TimeSpan { get; }
-    public bool IsSuccessful { get; }
-    public string Description { get; }
+    public string Status { get; }
 
-    public JobResult(TimeSpan timeSpan, bool isSuccessful, string description = null)
+    public JobResult(string status = null)
     {
-        TimeSpan = timeSpan;
-        IsSuccessful = isSuccessful;
-        Description = description;
+        Status = status;
     }
 }

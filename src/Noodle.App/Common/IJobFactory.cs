@@ -1,6 +1,6 @@
 ﻿namespace Noodle.App.Common;
 
-public interface IJobFactory<in TOptions>
+public interface IJobFactory
 {
-    IJob CreateJob(TOptions options);
+    IJob CreateJob(IJobOptions options);
 }

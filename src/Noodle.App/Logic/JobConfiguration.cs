@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Noodle.App.Commands;
 using Noodle.App.Common;
-using Noodle.App.Jobs;
+using Noodle.App.Options;
 
 namespace Noodle.App.Logic;
 
@@ -26,12 +25,12 @@ public class JobConfiguration
         }
     }
 
-    private BaseJobOptions Deserialize(Uri url, IConfiguration configuration)
+    private BaseOptions Deserialize(Uri url, IConfiguration configuration)
     {
         return url.Scheme switch
         {
-            "http" => configuration.Get<HttpJobOptions>(),
-            "https" => configuration.Get<HttpJobOptions>(),
+            "http" => configuration.Get<HttpOptions>(),
+            "https" => configuration.Get<HttpOptions>(),
             _ => throw new InvalidOperationException("Unknown protocol"),
         };
     }

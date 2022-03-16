@@ -1,8 +1,8 @@
 ﻿using Spectre.Console.Cli;
 
-namespace Noodle.App.Jobs;
+namespace Noodle.App.Options;
 
-public class HttpJobOptions : BaseJobOptions
+public class HttpOptions : BaseOptions
 {
     [CommandOption("-m|--method")]
     public string Method { get; set; } = "GET";

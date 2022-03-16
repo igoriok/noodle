@@ -1,5 +1,6 @@
 ﻿using Noodle.App.Common;
-using Noodle.App.Jobs;
+using Noodle.App.Logic;
+using Noodle.App.Options;
 using Noodle.App.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -7,12 +8,12 @@ using Spectre.Console.Cli;
 namespace Noodle.App.Commands;
 
 public class JobCommand<TOptions> : AsyncCommand<TOptions>
-    where TOptions : BaseJobOptions
+    where TOptions : BaseOptions
 {
     private readonly IAnsiConsole _console;
-    private readonly IJobFactory<TOptions> _factory;
+    private readonly IJobFactory _factory;
 
-    public JobCommand(IAnsiConsole console, IJobFactory<TOptions> factory)
+    public JobCommand(IAnsiConsole console, IJobFactory factory)
     {
         _console = console;
         _factory = factory;
@@ -31,7 +32,7 @@ public class JobCommand<TOptions> : AsyncCommand<TOptions>
 
     private async Task ExecuteAsync(TOptions options, CancellationToken cancellationToken)
     {
-        using var job = _factory.CreateJob(options);
+        using var job = new JobRunner(_factory, options);
 
         var view = new JobsView(job);
 
