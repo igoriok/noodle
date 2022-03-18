@@ -2,7 +2,7 @@
   "profiles": {
     "Noodle.App": {
       "commandName": "Project",
-      "commandLineArgs": "http https://www.google.com/"
+      "commandLineArgs": "http https://www.google.com/ --ip 172.217.20.196 --ip 172.217.20.196"
     },
     "Docker": {
       "commandName": "Docker"
