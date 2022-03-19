@@ -21,8 +21,11 @@ var app = new CommandApp<DefaultCommand>(new TypeRegistrar(services));
 
 app.Configure(cfg =>
 {
-    cfg.AddCommand<JobCommand<HttpSettings>>("http");
+    cfg.AddCommand<JobCommand<MeSettings>>("me");
     cfg.AddCommand<JobCommand<PingSettings>>("ping");
+    cfg.AddCommand<JobCommand<TcpSettings>>("tcp");
+    cfg.AddCommand<JobCommand<UdpSettings>>("udp");
+    cfg.AddCommand<JobCommand<HttpSettings>>("http");
 
     cfg.SetExceptionHandler(e => AnsiConsole.WriteException(e));
 });

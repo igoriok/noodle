@@ -6,6 +6,10 @@ namespace Noodle.App.Jobs;
 public abstract class SocketJob : HostJob
 {
     protected abstract int Port { get; }
+    protected virtual SocketType SocketType => SocketType.Stream;
+    protected virtual ProtocolType ProtocolType => ProtocolType.Tcp;
+    protected virtual int? SendTimeout { get; }
+    protected virtual int? ReceiveTimeout { get; }
 
     public virtual async Task<string> RunAsync(CancellationToken cancellationToken)
     {
@@ -19,9 +23,7 @@ public abstract class SocketJob : HostJob
         {
             await socket.ConnectAsync(endPoint, cancellationToken);
 
-            await using var stream = await GetStreamAsync(socket, cancellationToken);
-
-            result = await RunAsync(stream, cancellationToken);
+            result = await RunAsync(socket, cancellationToken);
         }
         finally
         {
@@ -33,7 +35,15 @@ public abstract class SocketJob : HostJob
 
     protected virtual Socket CreateSocket()
     {
-        return new Socket(SocketType.Stream, ProtocolType.Tcp);
+        var socket = new Socket(SocketType, ProtocolType);
+
+        if (SendTimeout.HasValue)
+            socket.SendTimeout = SendTimeout.Value;
+
+        if (ReceiveTimeout.HasValue)
+            socket.ReceiveTimeout = ReceiveTimeout.Value;
+
+        return socket;
     }
 
     protected virtual async Task<EndPoint> GetEndpointAsync(CancellationToken cancellationToken)
@@ -41,10 +51,5 @@ public abstract class SocketJob : HostJob
         return new IPEndPoint(await GetAddressAsync(cancellationToken), Port);
     }
 
-    protected virtual Task<Stream> GetStreamAsync(Socket socket, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<Stream>(new NetworkStream(socket, false));
-    }
-
-    protected abstract Task<string> RunAsync(Stream stream, CancellationToken cancellationToken);
+    protected abstract Task<string> RunAsync(Socket socket, CancellationToken cancellationToken);
 }

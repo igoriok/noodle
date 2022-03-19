@@ -30,6 +30,7 @@ public class JobConfiguration
         {
             "http" => configuration.Get<HttpSettings>(),
             "https" => configuration.Get<HttpSettings>(),
+            "me" => configuration.Get<MeSettings>(),
             _ => throw new InvalidOperationException("Unknown protocol"),
         };
     }

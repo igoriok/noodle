@@ -1,4 +1,5 @@
 ﻿using Noodle.App.Common;
+using Noodle.App.Jobs;
 using Noodle.App.Logic;
 using Noodle.App.UI;
 using Spectre.Console;
@@ -31,28 +32,32 @@ public class JobCommand<TSettings> : AsyncCommand<TSettings>
 
     private async Task ExecuteAsync(TSettings settings, CancellationToken cancellationToken)
     {
-        var runner = new JobRunner(_factory.CreateJob(settings));
-
-        var view = new JobsView(runner);
-
-        try
+        var jobs = new[]
         {
-            var task = runner.RunAsync(cancellationToken);
+            new JobRunner(new MeJob()),
+            new JobRunner(_factory.CreateJob(settings))
+        };
 
-            await _console
-                .Live(view)
-                .StartAsync(async ctx =>
+        var view = new JobsView(jobs);
+
+        var tasks = jobs.Select(job => job.RunAsync(cancellationToken)).ToArray();
+
+        await _console
+            .Live(view)
+            .StartAsync(async ctx =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (!cancellationToken.IsCancellationRequested)
+                    try
                     {
                         await Task.Delay(TimeSpan.FromSeconds(0.5), cancellationToken);
-
-                        ctx.Refresh();
                     }
-                });
+                    catch (TaskCanceledException) { }
 
-            await task;
-        }
-        catch (TaskCanceledException) { }
+                    ctx.Refresh();
+                }
+            });
+
+        await Task.WhenAll(tasks);
     }
 }

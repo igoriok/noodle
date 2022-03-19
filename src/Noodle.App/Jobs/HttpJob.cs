@@ -25,21 +25,23 @@ public class HttpJob : PipeJob, IJob
         get
         {
             if (_settings.Concurrency.HasValue)
-                yield return new ConcurrentStage(_settings.Concurrency.Value);
+                yield return new ParallelStage(_settings.Concurrency.Value);
 
             yield return new RepeatStage();
 
             if (_settings.Throttle.HasValue)
                 yield return new ThrottleStage(_settings.Throttle.Value);
 
-            if (_settings.Timeout.HasValue)
-                yield return new TimeoutStage(_settings.Timeout.Value);
+            // if (_settings.Timeout.HasValue)
+            //     yield return new TimeoutStage(_settings.Timeout.Value);
         }
     }
 
     protected override string Host => _settings.Url.Host;
     protected override int Port => _settings.Url.Port;
     protected override string[] IpAddresses => _settings.IpAddresses;
+    protected override int? SendTimeout => _settings.Timeout;
+    protected override int? ReceiveTimeout => _settings.Concurrency;
 
     public HttpJob(HttpSettings settings)
     {

@@ -1,10 +1,10 @@
 ﻿namespace Noodle.App.Stages;
 
-public class ConcurrentStage : IStage
+public class ParallelStage : IStage
 {
     private readonly int _concurrency;
 
-    public ConcurrentStage(int concurrency)
+    public ParallelStage(int concurrency)
     {
         _concurrency = concurrency;
     }

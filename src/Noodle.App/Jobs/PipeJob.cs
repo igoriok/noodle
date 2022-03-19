@@ -3,7 +3,7 @@ using Nerdbank.Streams;
 
 namespace Noodle.App.Jobs;
 
-public abstract class PipeJob : SocketJob
+public abstract class PipeJob : StreamJob
 {
     protected override Task<string> RunAsync(Stream stream, CancellationToken cancellationToken)
     {

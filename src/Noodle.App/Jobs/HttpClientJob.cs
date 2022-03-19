@@ -16,7 +16,7 @@ public class HttpClientJob : IJob
     {
         get
         {
-            yield return new ConcurrentStage(_settings.Concurrency ?? 1);
+            yield return new ParallelStage(_settings.Concurrency ?? 1);
             yield return new RepeatStage();
         }
     }

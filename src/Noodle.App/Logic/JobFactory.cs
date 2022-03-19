@@ -10,8 +10,11 @@ public class JobFactory : IJobFactory
     {
         return settings switch
         {
-            HttpSettings httpSettings => new HttpJob(httpSettings),
+            MeSettings meSettings => new MeJob(meSettings),
             PingSettings pingSettings => new PingJob(pingSettings),
+            TcpSettings tcpSettings => new TcpJob(tcpSettings),
+            UdpSettings udpSettings => new UdpJob(udpSettings),
+            HttpSettings httpSettings => new HttpJob(httpSettings),
             _ => throw new InvalidOperationException("Unknown job type")
         };
     }

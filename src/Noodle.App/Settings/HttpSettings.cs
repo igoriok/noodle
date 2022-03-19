@@ -20,8 +20,8 @@ public class HttpSettings : CommandSettings
     public int? Concurrency { get; set; }
 
     [CommandOption("-t|--timeout")]
-    public long? Timeout { get; set; }
+    public int? Timeout { get; set; }
 
     [CommandOption("--throttle")]
-    public long? Throttle { get; set; }
+    public int? Throttle { get; set; }
 }
