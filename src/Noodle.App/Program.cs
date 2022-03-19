@@ -4,7 +4,7 @@ using Noodle.App.Commands;
 using Noodle.App.Common;
 using Noodle.App.Infrastructure;
 using Noodle.App.Logic;
-using Noodle.App.Options;
+using Noodle.App.Settings;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -23,7 +23,8 @@ var app = new CommandApp<DefaultCommand>(new TypeRegistrar(services));
 
 app.Configure(cfg =>
 {
-    cfg.AddCommand<JobCommand<HttpOptions>>("http");
+    cfg.AddCommand<JobCommand<HttpSettings>>("http");
+    cfg.AddCommand<JobCommand<PingSettings>>("ping");
 
     cfg.SetExceptionHandler(e => AnsiConsole.WriteException(e));
 });

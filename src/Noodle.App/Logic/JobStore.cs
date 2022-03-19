@@ -23,9 +23,5 @@ public class JobStore
 
     public void Release(IEnumerable<JobRunner> jobs)
     {
-        foreach (var job in jobs)
-        {
-            job.Dispose();
-        }
     }
 }

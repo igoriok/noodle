@@ -1,30 +1,21 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Noodle.App.Common;
-using Noodle.App.Logic;
 
 namespace Noodle.App.Jobs;
 
-public abstract class SocketJob : IJob
+public abstract class SocketJob : EndpointJob
 {
-    private EndPoint[] _endpoints;
+    protected abstract int Port { get; }
 
-    public IJobOptions Options { get; }
-
-    protected SocketJob(IJobOptions options)
+    public virtual async Task<string> RunAsync(CancellationToken cancellationToken)
     {
-        Options = options;
-    }
-
-    public async Task<string> RunAsync(CancellationToken cancellationToken)
-    {
-        var endpoint = await GetEndpointAsync(cancellationToken);
+        var endPoint = await GetEndpointAsync(cancellationToken);
 
         string result;
 
         using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
-        await socket.ConnectAsync(endpoint, cancellationToken);
+        await socket.ConnectAsync(endPoint, cancellationToken);
 
         await using (var stream = await GetStreamAsync(socket, cancellationToken))
         {
@@ -38,34 +29,7 @@ public abstract class SocketJob : IJob
 
     protected virtual async Task<EndPoint> GetEndpointAsync(CancellationToken cancellationToken)
     {
-        if (_endpoints == null)
-        {
-            if (Options.IpAddresses?.Length > 0)
-            {
-                _endpoints = Options.IpAddresses
-                    .Select(a => new IPEndPoint(IPAddress.Parse(a), Options.Url.Port))
-                    .ToArray<EndPoint>();
-            }
-            else if (Options.Url.HostNameType == UriHostNameType.Dns)
-            {
-                var addresses = await Dns.GetHostAddressesAsync(Options.Url.IdnHost, cancellationToken);
-
-                _endpoints = addresses
-                    .Select(a => new IPEndPoint(a, Options.Url.Port))
-                    .ToArray<EndPoint>();
-            }
-            else
-            {
-                var address = IPAddress.Parse(Options.Url.Host);
-
-                _endpoints = new EndPoint[]
-                {
-                    new IPEndPoint(address, Options.Url.Port),
-                };
-            }
-        }
-
-        return _endpoints.Random();
+        return new IPEndPoint(await GetAddressAsync(cancellationToken), Port);
     }
 
     protected virtual Task<Stream> GetStreamAsync(Socket socket, CancellationToken cancellationToken)
@@ -74,8 +38,4 @@ public abstract class SocketJob : IJob
     }
 
     protected abstract Task<string> RunAsync(Stream stream, CancellationToken cancellationToken);
-
-    public void Dispose()
-    {
-    }
 }

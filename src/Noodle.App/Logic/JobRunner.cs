@@ -1,67 +1,45 @@
 ﻿using Noodle.App.Common;
+using Noodle.App.Stages;
 
 namespace Noodle.App.Logic;
 
-public class JobRunner : IDisposable
+public class JobRunner
 {
-    public IJobOptions Options { get; }
+    private readonly IJobFactory _factory;
+    public object Options { get; }
     public IJobStats Stats { get; }
 
-    public IReadOnlyList<IJob> Jobs { get; }
-
-    public JobRunner(IJobFactory factory, IJobOptions options)
+    public JobRunner(IJobFactory factory, object options)
     {
+        _factory = factory;
         Options = options;
         Stats = new JobStats();
-
-        Jobs = Enumerable.Repeat(Options, Options.Concurrency).Select(factory.CreateJob).ToArray();
     }
 
-    public async Task RunAsync(CancellationToken cancellationToken)
+    public Task RunAsync(CancellationToken cancellationToken)
     {
-        var tasks = new List<Task>(Jobs.Count);
-
-        foreach (var job in Jobs)
-        {
-            tasks.Add(RunAsync(job, cancellationToken));
-        }
-
-        await Task.WhenAll(tasks);
-    }
-
-    public void Dispose()
-    {
-        foreach (var job in Jobs)
-        {
-            job.Dispose();
-        }
-    }
-
-    private async Task RunAsync(IJob job, CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
+        var job = _factory.CreateJob(Options);
+        var stages = job.Pipeline
+            .Concat(new[]
             {
-                // TODO: Add metrics
-                var status = await job.RunAsync(cancellationToken);
+                new StatsStage(job, Stats)
+            })
+            .ToArray();
 
-                lock (Stats)
-                {
-                    Stats.Status = status;
-                    Stats.Successful++;
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception exception)
-            {
-                lock (Stats)
-                {
-                    Stats.Failed++;
-                    Stats.Status = exception.Message;
-                }
-            }
-        }
+        return Next(stages, 0)(cancellationToken);
+    }
+
+    private static Func<CancellationToken, Task> Next(IList<IStage> pipeline, int index)
+    {
+        return async (cancellationToken) =>
+        {
+            if (index >= pipeline.Count)
+                return;
+
+            var stage = pipeline[index];
+
+            await stage.ExecuteAsync(Next(pipeline, index + 1), cancellationToken);
+        };
     }
 
     private class JobStats : IJobStats

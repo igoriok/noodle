@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Noodle.App.Common;
-using Noodle.App.Options;
+﻿using System.Collections;
+using Microsoft.Extensions.Configuration;
+using Noodle.App.Settings;
 
 namespace Noodle.App.Logic;
 
@@ -13,7 +13,7 @@ public class JobConfiguration
         _configuration = configuration;
     }
 
-    public IEnumerable<IJobOptions> Load()
+    public IEnumerable Load()
     {
         var section = _configuration.GetSection("Jobs");
 
@@ -25,12 +25,12 @@ public class JobConfiguration
         }
     }
 
-    private BaseOptions Deserialize(Uri url, IConfiguration configuration)
+    private object Deserialize(Uri url, IConfiguration configuration)
     {
         return url.Scheme switch
         {
-            "http" => configuration.Get<HttpOptions>(),
-            "https" => configuration.Get<HttpOptions>(),
+            "http" => configuration.Get<HttpSettings>(),
+            "https" => configuration.Get<HttpSettings>(),
             _ => throw new InvalidOperationException("Unknown protocol"),
         };
     }

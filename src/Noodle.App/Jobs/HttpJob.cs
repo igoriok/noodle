@@ -4,35 +4,57 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Noodle.App.Options;
+using Noodle.App.Common;
+using Noodle.App.Settings;
+using Noodle.App.Stages;
 
 namespace Noodle.App.Jobs;
 
-public class HttpJob : PipeJob
+public class HttpJob : PipeJob, IJob
 {
     private static readonly string NewLine = "\r\n";
     private static readonly byte[] NewLineBytes = Encoding.ASCII.GetBytes(NewLine);
 
-    public new HttpOptions Options { get; }
+    private readonly HttpSettings _settings;
 
-    public HttpJob(HttpOptions options)
-        : base(options)
+    public IEnumerable<IStage> Pipeline
     {
-        Options = options;
+        get
+        {
+            if (_settings.Concurrency.HasValue)
+                yield return new ConcurrentStage(_settings.Concurrency.Value);
+
+            yield return new RepeatStage();
+
+            if (_settings.Throttle.HasValue)
+                yield return new ThrottleStage(_settings.Throttle.Value);
+
+            if (_settings.Timeout.HasValue)
+                yield return new TimeoutStage(_settings.Timeout.Value);
+        }
+    }
+
+    protected override string Host => _settings.Url.Host;
+    protected override int Port => _settings.Url.Port;
+    protected override string[] IpAddresses => _settings.IpAddresses;
+
+    public HttpJob(HttpSettings settings)
+    {
+        _settings = settings;
     }
 
     protected override async Task<Stream> GetStreamAsync(Socket socket, CancellationToken cancellationToken)
     {
         var stream = await base.GetStreamAsync(socket, cancellationToken);
 
-        if (string.Equals(Options.Url.Scheme, "https", StringComparison.InvariantCultureIgnoreCase))
+        if (string.Equals(_settings.Url.Scheme, "https", StringComparison.InvariantCultureIgnoreCase))
         {
             var ssl = new SslStream(stream, false, UserCertificateValidationCallback);
 
             await ssl.AuthenticateAsClientAsync(
                 new SslClientAuthenticationOptions
                 {
-                    TargetHost = Options.Url.Host,
+                    TargetHost = _settings.Url.Host,
                 },
                 cancellationToken);
 
@@ -54,9 +76,9 @@ public class HttpJob : PipeJob
     private async Task WriteRequestAsync(PipeWriter writer, CancellationToken cancellationToken)
     {
         var request = new StringBuilder()
-            .Append($"{Options.Method} {Options.Url.PathAndQuery} HTTP/1.1").Append(NewLine)
-            .Append($"Host: {Options.Url.Host}").Append(NewLine)
-            .Append($"User-Agent: {Options.UserAgent}").Append(NewLine)
+            .Append($"{_settings.Method} {_settings.Url.PathAndQuery} HTTP/1.1").Append(NewLine)
+            .Append($"Host: {_settings.Url.Host}").Append(NewLine)
+            .Append($"User-Agent: {_settings.UserAgent}").Append(NewLine)
             // .Append("Connection: Keep-Alive").Append(NewLine)
             // .Append("Accept-Encoding: gzip, deflate").Append(NewLine)
             // .Append("Accept-Language: en-US,en;q=0.9").Append(NewLine)

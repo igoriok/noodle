@@ -2,7 +2,7 @@
   "profiles": {
     "Noodle.App": {
       "commandName": "Project",
-      "commandLineArgs": "http https://www.google.com/ --ip 172.217.20.196 --ip 172.217.20.196"
+      "commandLineArgs": "ping www.google.com --ip 172.217.20.196 --throttle 500"
     },
     "Docker": {
       "commandName": "Docker"

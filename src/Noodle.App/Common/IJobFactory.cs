@@ -2,5 +2,5 @@
 
 public interface IJobFactory
 {
-    IJob CreateJob(IJobOptions options);
+    IJob CreateJob(object settings);
 }

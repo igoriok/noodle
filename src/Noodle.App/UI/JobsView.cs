@@ -29,7 +29,7 @@ public class JobsView : JustInTimeRenderable
         foreach (var job in _jobs)
         {
             table.AddRow(
-                new Text($"{job.Options.Url}"),
+                new Text($"{job.Options}"),
                 new Text($"{job.Stats.Status}"),
                 new Text($"{job.Stats.Successful}"),
                 new Text($"{job.Stats.Failed}")

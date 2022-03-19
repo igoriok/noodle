@@ -1,16 +1,17 @@
 ﻿using Noodle.App.Common;
 using Noodle.App.Jobs;
-using Noodle.App.Options;
+using Noodle.App.Settings;
 
 namespace Noodle.App.Logic;
 
 public class JobFactory : IJobFactory
 {
-    public IJob CreateJob(IJobOptions options)
+    public IJob CreateJob(object settings)
     {
-        return options switch
+        return settings switch
         {
-            HttpOptions httpOptions => new HttpJob(httpOptions),
+            HttpSettings httpSettings => new HttpJob(httpSettings),
+            PingSettings pingSettings => new PingJob(pingSettings),
             _ => throw new InvalidOperationException("Unknown job type")
         };
     }

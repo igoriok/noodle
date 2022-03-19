@@ -1,6 +1,10 @@
-﻿namespace Noodle.App.Common;
+﻿using Noodle.App.Stages;
 
-public interface IJob : IDisposable
+namespace Noodle.App.Common;
+
+public interface IJob
 {
+    IEnumerable<IStage> Pipeline { get; }
+
     Task<string> RunAsync(CancellationToken cancellationToken);
 }
