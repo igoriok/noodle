@@ -1,4 +1,5 @@
-﻿using Noodle.App.Logic;
+﻿using Noodle.App.Common;
+using Noodle.App.Logic;
 using Noodle.App.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -8,12 +9,14 @@ namespace Noodle.App.Commands;
 public class DefaultCommand : AsyncCommand
 {
     private readonly IAnsiConsole _console;
-    private readonly JobStore _store;
+    private readonly IJobFactory _factory;
+    private readonly JobConfiguration _configuration;
 
-    public DefaultCommand(IAnsiConsole console, JobStore store)
+    public DefaultCommand(IAnsiConsole console, IJobFactory factory, JobConfiguration configuration)
     {
         _console = console;
-        _store = store;
+        _factory = factory;
+        _configuration = configuration;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -29,30 +32,23 @@ public class DefaultCommand : AsyncCommand
 
     private async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var jobs = _store.Load().ToArray();
+        var jobs = _configuration.Load().Select(o => new JobRunner(_factory.CreateJob(o))).ToArray();
         var view = new JobsView(jobs);
 
-        try
-        {
-            var tasks = jobs.Select(job => job.RunAsync(cancellationToken)).ToArray();
+        var tasks = jobs.Select(job => job.RunAsync(cancellationToken)).ToArray();
 
-            await _console
-                .Live(view)
-                .StartAsync(async ctx =>
+        await _console
+            .Live(view)
+            .StartAsync(async ctx =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    while (!cancellationToken.IsCancellationRequested)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(0.5), cancellationToken);
+                    await Task.Delay(TimeSpan.FromSeconds(0.5), cancellationToken);
 
-                        ctx.Refresh();
-                    }
-                });
+                    ctx.Refresh();
+                }
+            });
 
-            await Task.WhenAll(tasks);
-        }
-        finally
-        {
-            _store.Release(jobs);
-        }
+        await Task.WhenAll(tasks);
     }
 }

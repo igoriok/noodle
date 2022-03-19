@@ -31,13 +31,13 @@ public class JobCommand<TSettings> : AsyncCommand<TSettings>
 
     private async Task ExecuteAsync(TSettings settings, CancellationToken cancellationToken)
     {
-        var job = new JobRunner(_factory, settings);
+        var runner = new JobRunner(_factory.CreateJob(settings));
 
-        var view = new JobsView(job);
+        var view = new JobsView(runner);
 
         try
         {
-            var task = job.RunAsync(cancellationToken);
+            var task = runner.RunAsync(cancellationToken);
 
             await _console
                 .Live(view)

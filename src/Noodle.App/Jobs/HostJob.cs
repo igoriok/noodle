@@ -3,7 +3,7 @@ using Noodle.App.Logic;
 
 namespace Noodle.App.Jobs;
 
-public abstract class EndpointJob
+public abstract class HostJob
 {
     private IPAddress[] _addresses;
 

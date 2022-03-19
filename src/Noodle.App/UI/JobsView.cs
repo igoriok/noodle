@@ -21,7 +21,8 @@ public class JobsView : JustInTimeRenderable
     protected override IRenderable Build()
     {
         var table = new Table()
-            .AddColumn("Url")
+            .AddColumn("Name")
+            .AddColumn("Description")
             .AddColumn("Status")
             .AddColumn("Successful")
             .AddColumn("Failed");
@@ -29,7 +30,8 @@ public class JobsView : JustInTimeRenderable
         foreach (var job in _jobs)
         {
             table.AddRow(
-                new Text($"{job.Options}"),
+                new Text($"{job.Name}"),
+                new Text($"{job.Description}"),
                 new Text($"{job.Stats.Status}"),
                 new Text($"{job.Stats.Successful}"),
                 new Text($"{job.Stats.Failed}")

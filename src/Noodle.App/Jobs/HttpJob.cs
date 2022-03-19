@@ -17,6 +17,9 @@ public class HttpJob : PipeJob, IJob
 
     private readonly HttpSettings _settings;
 
+    public string Name => "HTTP";
+    public string Description => _settings.Url.ToString();
+
     public IEnumerable<IStage> Pipeline
     {
         get

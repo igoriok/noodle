@@ -24,9 +24,4 @@ public class HttpSettings : CommandSettings
 
     [CommandOption("--throttle")]
     public long? Throttle { get; set; }
-
-    public override string ToString()
-    {
-        return Url.ToString();
-    }
 }

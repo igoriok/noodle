@@ -9,16 +9,19 @@ public class HttpClientJob : IJob
     private readonly HttpClient _httpClient;
     private readonly HttpSettings _settings;
 
+    public string Name => "HTTP";
+    public string Description => _settings.Url.ToString();
+
     public IEnumerable<IStage> Pipeline
     {
         get
         {
-            yield return new RepeatStage();
             yield return new ConcurrentStage(_settings.Concurrency ?? 1);
+            yield return new RepeatStage();
         }
     }
 
-    public HttpClientJob(HttpClient httpClient, HttpSettings settings, IJobStats stats)
+    public HttpClientJob(HttpClient httpClient, HttpSettings settings)
     {
         _httpClient = httpClient;
         _settings = settings;

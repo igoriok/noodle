@@ -5,24 +5,26 @@ namespace Noodle.App.Logic;
 
 public class JobRunner
 {
-    private readonly IJobFactory _factory;
-    public object Options { get; }
-    public IJobStats Stats { get; }
+    private readonly IJob _job;
 
-    public JobRunner(IJobFactory factory, object options)
+    public string Name => _job.Name;
+    public string Description => _job.Description;
+
+    public JobStats Stats { get; }
+
+    public JobRunner(IJob job)
     {
-        _factory = factory;
-        Options = options;
+        _job = job;
+
         Stats = new JobStats();
     }
 
     public Task RunAsync(CancellationToken cancellationToken)
     {
-        var job = _factory.CreateJob(Options);
-        var stages = job.Pipeline
+        var stages = _job.Pipeline
             .Concat(new[]
             {
-                new StatsStage(job, Stats)
+                new StatsStage(_job, Stats)
             })
             .ToArray();
 
@@ -40,14 +42,5 @@ public class JobRunner
 
             await stage.ExecuteAsync(Next(pipeline, index + 1), cancellationToken);
         };
-    }
-
-    private class JobStats : IJobStats
-    {
-        public string Status { get; set; }
-
-        public int Successful { get; set; }
-
-        public int Failed { get; set; }
     }
 }

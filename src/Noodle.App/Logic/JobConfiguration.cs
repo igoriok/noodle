@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Noodle.App.Settings;
 
 namespace Noodle.App.Logic;
@@ -13,7 +12,7 @@ public class JobConfiguration
         _configuration = configuration;
     }
 
-    public IEnumerable Load()
+    public IEnumerable<object> Load()
     {
         var section = _configuration.GetSection("Jobs");
 

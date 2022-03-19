@@ -5,9 +5,9 @@ namespace Noodle.App.Stages;
 public class StatsStage : IStage
 {
     private readonly IJob _job;
-    private readonly IJobStats _stats;
+    private readonly JobStats _stats;
 
-    public StatsStage(IJob job, IJobStats stats)
+    public StatsStage(IJob job, JobStats stats)
     {
         _job = job;
         _stats = stats;

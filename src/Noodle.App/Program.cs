@@ -15,8 +15,6 @@ var configuration = new ConfigurationBuilder()
 var services = new ServiceCollection()
     .AddSingleton<IConfiguration>(configuration)
     .AddSingleton<JobConfiguration>()
-    .AddSingleton<JobFactory>()
-    .AddSingleton<JobStore>()
     .AddTransient<IJobFactory, JobFactory>();
 
 var app = new CommandApp<DefaultCommand>(new TypeRegistrar(services));

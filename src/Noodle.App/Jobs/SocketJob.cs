@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace Noodle.App.Jobs;
 
-public abstract class SocketJob : EndpointJob
+public abstract class SocketJob : HostJob
 {
     protected abstract int Port { get; }
 
@@ -13,18 +13,27 @@ public abstract class SocketJob : EndpointJob
 
         string result;
 
-        using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+        using var socket = CreateSocket();
 
-        await socket.ConnectAsync(endPoint, cancellationToken);
-
-        await using (var stream = await GetStreamAsync(socket, cancellationToken))
+        try
         {
+            await socket.ConnectAsync(endPoint, cancellationToken);
+
+            await using var stream = await GetStreamAsync(socket, cancellationToken);
+
             result = await RunAsync(stream, cancellationToken);
         }
-
-        await socket.DisconnectAsync(false, cancellationToken);
+        finally
+        {
+            await socket.DisconnectAsync(false, cancellationToken);
+        }
 
         return result;
+    }
+
+    protected virtual Socket CreateSocket()
+    {
+        return new Socket(SocketType.Stream, ProtocolType.Tcp);
     }
 
     protected virtual async Task<EndPoint> GetEndpointAsync(CancellationToken cancellationToken)

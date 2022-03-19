@@ -5,9 +5,12 @@ using Noodle.App.Stages;
 
 namespace Noodle.App.Jobs;
 
-public class PingJob : EndpointJob, IJob
+public class PingJob : HostJob, IJob
 {
     private readonly PingSettings _settings;
+
+    public string Name => "PING";
+    public string Description => _settings.Host;
 
     public IEnumerable<IStage> Pipeline
     {
