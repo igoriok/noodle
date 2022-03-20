@@ -17,7 +17,7 @@ public class UdpJob : SocketJob, IJob
     protected override SocketType SocketType => SocketType.Dgram;
     protected override ProtocolType ProtocolType => ProtocolType.Udp;
     protected override int? SendTimeout => _settings.Timeout;
-    protected override int? ReceiveTimeout => _settings.Concurrency;
+    protected override int? ReceiveTimeout => _settings.Timeout;
 
     public string Name => "UDP";
     public string Description => $"{Host}:{Port}";

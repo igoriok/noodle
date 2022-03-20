@@ -41,7 +41,7 @@ public class HttpJob : PipeJob, IJob
     protected override int Port => _settings.Url.Port;
     protected override string[] IpAddresses => _settings.IpAddresses;
     protected override int? SendTimeout => _settings.Timeout;
-    protected override int? ReceiveTimeout => _settings.Concurrency;
+    protected override int? ReceiveTimeout => _settings.Timeout;
 
     public HttpJob(HttpSettings settings)
     {

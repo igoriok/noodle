@@ -15,7 +15,7 @@ public class TcpJob : SocketJob, IJob
     protected override int Port => _settings.Port;
     protected override string[] IpAddresses => _settings.IpAddresses;
     protected override int? SendTimeout => _settings.Timeout;
-    protected override int? ReceiveTimeout => _settings.Concurrency;
+    protected override int? ReceiveTimeout => _settings.Timeout;
 
     public string Name => "TCP";
     public string Description => $"{Host}:{Port}";
